@@ -6,6 +6,9 @@ const cookieParser = require("cookie-parser");
 import { protect } from "./modules/auth";
 import { createNewUser, signin } from "./handlers/user";
 
+const redis = require("ioredis");
+const apicache = require("apicache");
+
 const server = express();
 
 server.use(cors());
@@ -25,6 +28,13 @@ server.use(cookieParser());
 // };
 // server.use(customLogger("CUSTOM_LOGGER"));
 //  COMPOSE MIDDLEWARE NPM
+
+let cacheWithRedis = apicache.options({
+  redisClient: new redis(process.env.REDIS_SERVER),
+}).middleware;
+// apicache.options({ debug: true });
+server.use(cacheWithRedis("5 minutes"));
+
 server.get("/", (req, res) => {
   res.status(200).json({ message: "hello from server!" });
 });
